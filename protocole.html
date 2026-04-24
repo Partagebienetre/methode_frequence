@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Méthode Fréquence — Protocole Complet</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --noir: #07070a;
+    --blanc: #f2ede8;
+    --cyan: #00d9c8;
+    --violet: #8b5cf6;
+    --or: #c9a84c;
+    --muted: rgba(242,237,232,0.45);
+    --border: rgba(242,237,232,0.07);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--noir); color: var(--blanc); font-family: 'Cormorant Garamond', serif; overflow-x: hidden; }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.3;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  }
+
+  /* GATE */
+  #gate {
+    position: fixed; inset: 0;
+    background: var(--noir);
+    z-index: 1000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1rem; padding: 2rem; text-align: center;
+    transition: opacity 0.6s, visibility 0.6s;
+  }
+  #gate.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  #gate p { font-size: 0.9rem; color: var(--muted); font-style: italic; max-width: 320px; line-height: 1.7; }
+  .gate-brand { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.05em; background: linear-gradient(135deg, #00d9c8, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .gate-link { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--cyan); text-decoration: none; border: 1px solid rgba(0,217,200,0.3); padding: 0.6rem 1.4rem; margin-top: 0.5rem; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 2rem;
+    background: rgba(7,7,10,0.88);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-brand { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: 0.06em; background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .nav-toggle { display: flex; gap: 0.4rem; }
+  .toggle-btn { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.45rem 1rem; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.25s; }
+  .toggle-btn.active { background: linear-gradient(135deg, var(--cyan), var(--violet)); color: var(--noir); border-color: transparent; }
+
+  /* HERO */
+  .hero {
+    min-height: 85vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 5rem 2rem 4rem; position: relative; overflow: hidden;
+  }
+  .hero-orb { position: absolute; border-radius: 50%; filter: blur(110px); opacity: 0.09; pointer-events: none; }
+  .orb1 { width: 700px; height: 700px; background: var(--cyan); top: -200px; left: -200px; }
+  .orb2 { width: 500px; height: 500px; background: var(--violet); bottom: -200px; right: -150px; }
+
+  .hero-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--cyan); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.9s ease forwards 0.2s; }
+  h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(4rem, 12vw, 9rem); line-height: 0.85; letter-spacing: 0.02em; opacity: 0; animation: fadeUp 0.9s ease forwards 0.35s; }
+  h1 .g { background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-sub { font-size: clamp(1rem, 2.2vw, 1.35rem); font-style: italic; font-weight: 300; line-height: 1.8; color: var(--muted); max-width: 540px; margin: 2rem auto 0; opacity: 0; animation: fadeUp 0.9s ease forwards 0.5s; }
+  .hero-sub strong { color: var(--blanc); font-style: normal; font-weight: 400; }
+
+  .timer-badge { display: inline-flex; align-items: center; gap: 1.5rem; border: 1px solid var(--border); padding: 1rem 2rem; margin-top: 3rem; opacity: 0; animation: fadeUp 0.9s ease forwards 0.65s; }
+  .t-item { text-align: center; }
+  .t-num { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; line-height: 1; }
+  .t-num.c { color: var(--cyan); }
+  .t-num.v { color: var(--violet); }
+  .t-label { font-family: 'DM Mono', monospace; font-size: 0.5rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+  .sep { font-family: 'DM Mono', monospace; color: var(--border); font-size: 1.2rem; }
+
+  /* LABELS */
+  .s-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--violet); text-align: center; margin-bottom: 2.5rem; }
+  .divider { width: 50px; height: 1px; background: linear-gradient(90deg, var(--cyan), var(--violet)); margin: 0 auto 3rem; }
+
+  /* LOIS */
+  .lois-section { padding: 5rem 2rem; max-width: 960px; margin: 0 auto; }
+  .lois-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1px; background: var(--border); }
+  .loi-card { background: var(--noir); padding: 2.5rem 2rem; position: relative; overflow: hidden; transition: background 0.35s; }
+  .loi-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; transform: scaleX(0); transform-origin: left; transition: transform 0.45s ease; }
+  .loi-card:hover::after { transform: scaleX(1); }
+  .loi-card:hover { background: rgba(242,237,232,0.02); }
+  .l1::after { background: var(--cyan); }
+  .l2::after { background: var(--violet); }
+  .l3::after { background: var(--or); }
+  .loi-n { font-family: 'Bebas Neue', sans-serif; font-size: 5rem; line-height: 1; color: rgba(242,237,232,0.04); margin-bottom: -0.8rem; }
+  .loi-tag { font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; display: block; margin-bottom: 0.5rem; }
+  .l1 .loi-tag { color: var(--cyan); }
+  .l2 .loi-tag { color: var(--violet); }
+  .l3 .loi-tag { color: var(--or); }
+  .loi-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.04em; margin-bottom: 1rem; }
+  .loi-desc { font-size: 0.88rem; font-weight: 300; line-height: 1.75; color: rgba(242,237,232,0.55); }
+
+  /* PROTO */
+  .proto-section { padding: 5rem 2rem; max-width: 960px; margin: 0 auto; }
+  .proto-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.5rem, 7vw, 5rem); text-align: center; margin-bottom: 0.4rem; }
+  .proto-sub { text-align: center; font-style: italic; font-weight: 300; color: var(--muted); font-size: 1rem; margin-bottom: 3rem; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* STEPS */
+  .step { display: grid; grid-template-columns: 90px 1fr; margin-bottom: 1px; background: var(--border); gap: 1px; opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .step.visible { opacity: 1; transform: translateY(0); }
+  .step-left { background: var(--noir); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 0.5rem; gap: 0.15rem; }
+  .step-min { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; line-height: 1; }
+  .step-min-label { font-family: 'DM Mono', monospace; font-size: 0.48rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(242,237,232,0.3); }
+  .step-right { background: var(--noir); padding: 2rem 2.5rem; transition: background 0.3s; }
+  .step:hover .step-right, .step:hover .step-left { background: rgba(242,237,232,0.018); }
+  .step-tag { font-family: 'DM Mono', monospace; font-size: 0.52rem; letter-spacing: 0.2em; text-transform: uppercase; display: block; margin-bottom: 0.4rem; }
+  .step-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.04em; color: var(--blanc); margin-bottom: 0.8rem; line-height: 1.1; }
+  .step-desc { font-size: 0.88rem; font-weight: 300; line-height: 1.75; color: rgba(242,237,232,0.6); margin-bottom: 1rem; }
+  .step-pratique { font-size: 0.8rem; font-style: italic; color: rgba(242,237,232,0.38); padding-left: 0.9rem; border-left: 2px solid; line-height: 1.65; }
+
+  .c1 .step-min, .c1 .step-tag { color: var(--cyan); } .c1 .step-pratique { border-color: var(--cyan); }
+  .c2 .step-min, .c2 .step-tag { color: #60a5fa; } .c2 .step-pratique { border-color: #60a5fa; }
+  .c3 .step-min, .c3 .step-tag { color: var(--violet); } .c3 .step-pratique { border-color: var(--violet); }
+  .c4 .step-min, .c4 .step-tag { color: #c084fc; } .c4 .step-pratique { border-color: #c084fc; }
+  .c5 .step-min, .c5 .step-tag { color: var(--or); } .c5 .step-pratique { border-color: var(--or); }
+  .e1 .step-min, .e1 .step-tag { color: var(--cyan); } .e1 .step-pratique { border-color: var(--cyan); }
+  .e2 .step-min, .e2 .step-tag { color: var(--violet); } .e2 .step-pratique { border-color: var(--violet); }
+  .e3 .step-min, .e3 .step-tag { color: var(--or); } .e3 .step-pratique { border-color: var(--or); }
+
+  /* TOTAL */
+  .total-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding: 1.2rem 2rem; border: 1px solid rgba(0,217,200,0.18); background: rgba(0,217,200,0.03); margin-top: 0.5rem; }
+  .tl { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
+  .tv { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--cyan); }
+
+  /* PRINCIPES */
+  .principes-section { padding: 5rem 2rem; max-width: 960px; margin: 0 auto; }
+  .principes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 3rem; }
+  .p-item { text-align: center; }
+  .p-icon { font-size: 1.4rem; display: block; margin-bottom: 0.7rem; }
+  .p-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: 0.04em; margin-bottom: 0.4rem; }
+  .p-desc { font-size: 0.8rem; font-weight: 300; line-height: 1.65; color: rgba(242,237,232,0.42); }
+
+  /* MANTRA */
+  .mantra-section { padding: 6rem 2rem; text-align: center; position: relative; overflow: hidden; }
+  .mantra-orb { position: absolute; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(ellipse, rgba(139,92,246,0.08) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%,-50%); pointer-events: none; }
+  .mantra-text { position: relative; font-size: clamp(1.2rem, 2.8vw, 1.9rem); font-style: italic; font-weight: 300; line-height: 1.85; color: rgba(242,237,232,0.75); max-width: 560px; margin: 0 auto 2.5rem; }
+  .mantra-text strong { color: var(--blanc); font-style: normal; font-weight: 400; }
+  .sig { font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(242,237,232,0.2); }
+
+  /* CTA */
+  .cta-section { padding: 4rem 2rem 6rem; text-align: center; max-width: 500px; margin: 0 auto; }
+  .cta-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.04em; margin-bottom: 0.8rem; }
+  .cta-text { font-size: 0.9rem; font-weight: 300; font-style: italic; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.65; }
+  .cta-btn { display: inline-block; background: linear-gradient(135deg, var(--cyan), var(--violet)); color: var(--noir); font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.1em; padding: 1rem 2.5rem; text-decoration: none; transition: opacity 0.3s, transform 0.2s; }
+  .cta-btn:hover { opacity: 0.85; transform: translateY(-2px); }
+
+  footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; font-family: 'DM Mono', monospace; font-size: 0.52rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(242,237,232,0.18); }
+  footer a { color: rgba(242,237,232,0.22); text-decoration: none; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 600px) {
+    .step { grid-template-columns: 65px 1fr; }
+    .step-right { padding: 1.5rem; }
+    .step-left { padding: 1.5rem 0.4rem; }
+    .step-min { font-size: 1.6rem; }
+    nav { padding: 0.8rem 1rem; }
+    .toggle-btn { padding: 0.4rem 0.7rem; font-size: 0.55rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-brand">LA MÉTHODE FRÉQUENCE</div>
+  <p>Accès réservé aux abonnés.<br>Retourne à la page d'accueil pour t'inscrire gratuitement.</p>
+  <a href="./index.html" class="gate-link">← Accéder au protocole</a>
+</div>
+
+<nav>
+  <div class="nav-brand">LA MÉTHODE FRÉQUENCE</div>
+  <div class="nav-toggle">
+    <button class="toggle-btn active" onclick="showPanel('p27', this)">27 MIN</button>
+    <button class="toggle-btn" onclick="showPanel('p9', this)">9 MIN</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-orb orb1"></div>
+  <div class="hero-orb orb2"></div>
+  <p class="hero-eyebrow">Agnès & Vous — Protocole Exclusif</p>
+  <h1>LA MÉTHODE<br><span class="g">FRÉQUENCE</span></h1>
+  <p class="hero-sub">Deux formats. Une seule loi :<br><strong>tu n'attires pas ce que tu veux — tu attires ce que tu es.</strong></p>
+  <div class="timer-badge">
+    <div class="t-item"><div class="t-num c">27</div><div class="t-label">min — Complet</div></div>
+    <div class="sep">|</div>
+    <div class="t-item"><div class="t-num v">9</div><div class="t-label">min — Express</div></div>
+  </div>
+</section>
+
+<!-- LOIS -->
+<section class="lois-section">
+  <p class="s-label reveal">Les 3 Lois Biophysiques</p>
+  <div class="lois-grid reveal">
+    <div class="loi-card l1">
+      <div class="loi-n">01</div>
+      <span class="loi-tag">Premier principe</span>
+      <div class="loi-title">L'Émission du Champ</div>
+      <p class="loi-desc">Le cœur génère un champ électromagnétique détectable à plus d'un mètre. En état de cohérence, ce champ devient cohérent — et interagit avec le champ quantique environnant. C'est le fondement de toute attraction consciente.</p>
+    </div>
+    <div class="loi-card l2">
+      <div class="loi-n">02</div>
+      <span class="loi-tag">Deuxième principe</span>
+      <div class="loi-title">La Gravure Cellulaire</div>
+      <p class="loi-desc">Les neurones co-activés se câblent ensemble. Le cerveau ne distingue pas une expérience vécue d'une expérience imaginée avec intensité. La répétition délibérée grave de nouveaux circuits — et modifie ta réalité perçue.</p>
+    </div>
+    <div class="loi-card l3">
+      <div class="loi-n">03</div>
+      <span class="loi-tag">Troisième principe</span>
+      <div class="loi-title">Le Scellement de l'Intention</div>
+      <p class="loi-desc">Le subconscient pilote 95% de tes comportements. En le saturant d'une intention précise à haute intensité émotionnelle, tu dépasses la résistance consciente et reprogrammes la source de tes automatismes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PROTOCOLE -->
+<section class="proto-section">
+  <p class="s-label">Le Protocole</p>
+
+  <!-- 27 MIN -->
+  <div class="panel active" id="p27">
+    <h2 class="proto-title">FORMAT COMPLET</h2>
+    <p class="proto-sub">5 étapes · 27 minutes · À pratiquer le matin, avant le bruit du monde</p>
+
+    <div class="step c1">
+      <div class="step-left"><div class="step-min">6</div><div class="step-min-label">min</div></div>
+      <div class="step-right">
+        <span class="step-tag">Principe 1 — Émission du Champ</span>
+        <div class="step-name">L'Ancrage Vibratoire</div>
+        <p class="step-desc">Inspire 5 sec, expire 5 sec — six cycles par minute. Ce n'est pas de la relaxation : c'est une synchronisation cœur-cerveau qui rend ton champ électromagnétique cohérent. Pendant ces 6 minutes, <strong>ressens dans ta poitrine la réalité que tu appelles</strong> — comme si elle était déjà là.</p>
+        <p class="step-pratique">Main sur le cœur. Une scène précise et concrète de ta vie désirée. Ressens la gratitude avant les preuves. Ton cœur ne distingue pas le présent du futur — il émet le signal maintenant.</p>
+      </div>
+    </div>
+
+    <div class="step c2">
+      <div class="step-left"><div class="step-min">8</div><div class="step-min-label">min</div></div>
+      <div class="step-right">
+        <span class="step-tag">Principe 2 — Gravure Cellulaire</span>
+        <div class="step-name">La Projection Neuronale</div>
+        <p class="step-desc">Quatre scènes de 2 minutes. Tu vis mentalement ta réalité désirée avec tous tes sens — tu vois, tu entends, tu ressens les détails. <strong>Ces 8 minutes sculptent l'autoroute neuronale que ta vie va emprunter.</strong></p>
+        <p class="step-pratique">Scène 1 : tu reçois un message de prospect. Scène 2 : tu es en route vers un RDV. Scène 3 : un virement arrive. Scène 4 : quelqu'un dit "oui" à ta proposition. Ressens chaque scène jusqu'à la chair de poule.</p>
+      </div>
+    </div>
+
+    <div class="step c3">
+      <div class="step-left"><div class="step-min">5</div><div class="step-min-label">min</div></div>
+      <div class="step-right">
+        <span class="step-tag">Principes 1+2 — Ancrage sensoriel</span>
+        <div class="step-name">La Lecture des Signaux</div>
+        <p class="step-desc">Ton système réticulaire activateur filtre 2 millions de bits par seconde en 126 — il ne te montre que ce qu'il cherche. Ces 5 minutes programment ce filtre pour voir les synchronicités et preuves que ton attraction est en mouvement. <strong>Ce n'est pas de la pensée positive — c'est de la neurologie appliquée.</strong></p>
+        <p class="step-pratique">Dis ou écris à voix haute : 3 preuves que l'univers t'envoie des signaux aujourd'hui ou hier. Une rencontre, une idée, une conversation inattendue. Si tu n'en trouves pas, cherche plus loin — elles sont là.</p>
+      </div>
+    </div>
+
+    <div class="step c4">
+      <div class="step-left"><div class="step-min">7</div><div class="step-min-label">min</div></div>
+      <div class="step-right">
+        <span class="step-tag">Principes 2+3 — Identité</span>
+        <div class="step-name">L'Incarnation Expansive</div>
+        <p class="step-desc">Tu ne peux pas attirer un futur que ton identité actuelle ne peut pas contenir. Ces 7 minutes servent à <strong>habiter la version de toi qui a déjà ce que tu cherches</strong> — ses décisions, ses réflexes, son rapport à l'argent et au temps. L'identité précède toujours les preuves externes.</p>
+        <p class="step-pratique">3 questions à voix haute : "Comment pense la version de moi qui a déjà cela ?" — "Quelle décision prendrait-elle aujourd'hui ?" — "Quel est son rapport à l'abondance ?" Puis : UNE action concrète depuis cette identité, aujourd'hui.</p>
+      </div>
+    </div>
+
+    <div class="step c5">
+      <div class="step-left"><div class="step-min">1</div><div class="step-min-label">min</div></div>
+      <div class="step-right">
+        <span class="step-tag">Principe 3 — Subconscient</span>
+        <div class="step-name">Le Scellement</div>
+        <p class="step-desc">La dernière minute est la plus dense. Elle grave ton intention dans le subconscient par saturation et intensité croissante. <strong>Ce qui s'imprime ici voyage avec toi toute la journée.</strong></p>
+        <p class="step-pratique">Répète ton intention 12× à voix haute, conviction montante. Exemple : "Je suis le signal. Ce que j'émets me revient. Mon abondance est déjà en route." 3 grandes respirations. Ouvre les yeux. Commence ta journée.</p>
+      </div>
+    </div>
+
+    <div class="total-bar">
+      <div class="tl">Durée totale</div>
+      <div class="tv">27 MIN</div>
+      <div class="tl">6 + 8 + 5 + 7 + 1 · 5 étapes</div>
+    </div>
+  </div>
+
+  <!-- 9 MIN -->
+  <div class="panel" id="p9">
+    <h2 class="proto-title">FORMAT EXPRESS</h2>
+    <p class="proto-sub">3 étapes · 9 minutes · Pour les jours où le temps manque — pas la fréquence</p>
+
+    <div class="step e1">
+      <div class="step-left"><div class="step-min">3</div><div class="step-min-label">min</div></div>
+      <div class="step-right">
+        <span class="step-tag">Principe 1 — Émission du Champ</span>
+        <div class="step-name">L'Ancrage Vibratoire Express</div>
+        <p class="step-desc">Trois minutes de cohérence cardiaque ciblée. Inspire 5 sec, expire 5 sec. <strong>Choisis UNE scène précise de ta réalité désirée</strong> et maintiens-la avec l'émotion correspondante pendant toute la durée. La puissance n'est pas dans la durée — elle est dans l'intensité émotionnelle.</p>
+        <p class="step-pratique">Main sur le cœur. Une seule image. Une seule émotion. Gratitude ou fierté — ressens-la jusqu'à ce qu'elle soit physiquement palpable dans ta poitrine. Trois minutes suffisent pour mettre le champ en cohérence.</p>
+      </div>
+    </div>
+
+    <div class="step e2">
+      <div class="step-left"><div class="step-min">5</div><div class="step-min-label">min</div></div>
+      <div class="step-right">
+        <span class="step-tag">Principes 2+3 — Gravure & Identité fusionnées</span>
+        <div class="step-name">La Fusion Identitaire</div>
+        <p class="step-desc">Les principes 2 et 3 fusionnés en une seule étape intensive. Tu incarnes simultanément la version expansive de toi-même ET tu graves les circuits qui la rendent réelle. <strong>Cinq minutes d'identité vécue valent plus que vingt minutes de visualisation passive.</strong></p>
+        <p class="step-pratique">Debout. Adopte la posture, la respiration, le regard de la version de toi qui a déjà réussi. Dis à voix haute 2 décisions qu'elle prendrait aujourd'hui. Puis 2 scènes de 30 sec — rapides, intenses, incarnées dans le corps.</p>
+      </div>
+    </div>
+
+    <div class="step e3">
+      <div class="step-left"><div class="step-min">1</div><div class="step-min-label">min</div></div>
+      <div class="step-right">
+        <span class="step-tag">Principe 3 — Subconscient</span>
+        <div class="step-name">Le Scellement</div>
+        <p class="step-desc">Identique au format complet — parce qu'il est non-négociable. Cette minute finale est le ciment. <strong>Elle fixe tout ce qui précède dans le subconscient</strong> et définit la fréquence de ta journée entière. Ne la saute jamais.</p>
+        <p class="step-pratique">Répète ton intention 12× à voix haute, intensité croissante. Chaque répétition plus forte que la précédente. 3 grandes respirations. Tu es le signal. La journée commence.</p>
+      </div>
+    </div>
+
+    <div class="total-bar">
+      <div class="tl">Durée totale</div>
+      <div class="tv">9 MIN</div>
+      <div class="tl">3 + 5 + 1 · 3 étapes</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRINCIPES -->
+<section class="principes-section">
+  <div class="divider"></div>
+  <p class="s-label reveal">Pourquoi ça fonctionne</p>
+  <div class="principes-grid reveal">
+    <div class="p-item"><span class="p-icon">⚡</span><div class="p-title">Champ cardiaque</div><p class="p-desc">Le cœur génère un champ EM 100× plus puissant que le cerveau, mesurable à 90 cm (Institut HeartMath).</p></div>
+    <div class="p-item"><span class="p-icon">🧠</span><div class="p-title">Loi de Hebb</div><p class="p-desc">Les neurones co-activés se connectent. La visualisation intense active les mêmes circuits que l'expérience réelle.</p></div>
+    <div class="p-item"><span class="p-icon">🔬</span><div class="p-title">SRA — le filtre</div><p class="p-desc">Le système réticulaire activateur filtre 2M bits/sec. Ce protocole programme ce filtre pour chercher les preuves.</p></div>
+    <div class="p-item"><span class="p-icon">🌊</span><div class="p-title">Effet observateur</div><p class="p-desc">En physique quantique, l'état de l'observateur influence ce qu'il observe. Tu fais partie du système.</p></div>
+  </div>
+</section>
+
+<!-- MANTRA -->
+<section class="mantra-section reveal">
+  <div class="mantra-orb"></div>
+  <div class="divider"></div>
+  <p class="mantra-text">"Je n'attends pas les preuves pour croire.<br><strong>Je deviens le signal qui les génère.</strong><br>Ce que j'émets, je l'attire.<br>Ce que j'incarne, je le crée."</p>
+  <p class="sig">Agnès & Vous — La Méthode Fréquence</p>
+</section>
+
+<!-- CTA -->
+<section class="cta-section reveal">
+  <h3 class="cta-title">Aller plus loin</h3>
+  <p class="cta-text">Ce protocole est un point de départ. Si tu veux travailler ta fréquence cellulaire de l'intérieur — nutrition, oméga-3, équilibre hormonal — parlons-en.</p>
+  <a href="mailto:contact@agnesetvous.com" class="cta-btn">PRENDRE RENDEZ-VOUS →</a>
+</section>
+
+<footer>
+  <a href="mailto:contact@agnesetvous.com">contact@agnesetvous.com</a> &nbsp;·&nbsp;
+  <a href="https://agnesetvous.com">agnesetvous.com</a> &nbsp;·&nbsp;
+  Agnès & Vous © 2026
+</footer>
+
+<script>
+  // GATE CHECK
+  const gate = document.getElementById('gate');
+  if (localStorage.getItem('mf_access') === 'true') {
+    gate.classList.add('hidden');
+  }
+
+  // PANEL TOGGLE
+  function showPanel(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#' + id + ' .step').forEach(s => { s.classList.remove('visible'); void s.offsetWidth; });
+    setTimeout(() => triggerSteps(id), 50);
+  }
+
+  function triggerSteps(panelId) {
+    document.querySelectorAll('#' + panelId + ' .step').forEach((s, i) => {
+      setTimeout(() => s.classList.add('visible'), 80 + i * 110);
+    });
+  }
+
+  // SCROLL REVEAL
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  window.addEventListener('load', () => setTimeout(() => triggerSteps('p27'), 400));
+</script>
+</body>
+</html>
